@@ -1,3 +1,4 @@
+# code by @jolenechong on github
 import requests  #for api
 import pandas as pd
 from collections import Counter #for api part
@@ -77,7 +78,7 @@ def whenWatch():
 
 whenWatch()
 
-# CHALLENGE: try to use duration
+# CHALLENGE: try to use duration instead of counts
 
 '''
 API
@@ -130,8 +131,9 @@ def findGenres():
 
     for movie in movies:
         # print(movie.find(':'))
-        if movie.find(':') != -1:
+        if movie.find(':') != -1: #movie.find returns -1 if it doesn't find anyth
             movie = movie[:movie.find(':')]
+            # print(movie)
 
         if movie.find('_') != -1:
             movie = movie[:movie.find('_')]
