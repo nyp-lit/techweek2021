@@ -8,14 +8,17 @@ df = pd.read_csv('Part 1 Analysing Netflix Data/SampleViewingAcitivty.csv')
 # print(list(df.columns))
 
 # get only my data
+# only return rows with ur name in profile name column
 # df = df[df["Profile Name"].str.contains("Jolene")]
 
 # longest session
+# basically i wna see what movie i watch in one sitting and how long that one sitting was
 def longestSession():
-    print('Longest Session:',df["Duration"].max)
+    print('Longest Session:',df["Duration"].max())
     longsess = df["Duration"].max()
+    # find index of longest duration according to excel sheet
     longsess_idx = df.index[df["Duration"] == longsess][0] #get first match of longest duration index
-    # we dont only want the index, we want to ge thte entire row
+    # get entire row using the index    
     longsess = df.iloc[[longsess_idx]] #takes in a list and returns all the data in that row
     print("You watched", longsess["Title"].values[0], "for", longsess["Duration"].values[0])
 # longestSession()
@@ -26,8 +29,19 @@ df = df.drop(["Profile Name", 'Attributes', 'Supplemental Video Type',
 # print(df.head())
 
 # correct format of date and times
+# dun copy this first show wat happens if dh this
 df['Duration'] = pd.to_timedelta(df['Duration'])
 df['Start Time'] = pd.to_datetime(df['Start Time'])
+
+def totalNetflix():
+    totalDuration = df["Duration"]
+    print(totalDuration.shape)
+    # only return rows if its more than a minute
+    totalDuration = totalDuration[(totalDuration > '0 days 00:01:00')]
+    print(totalDuration.shape)
+    print("total time spent on netflix:", totalDuration.sum())
+
+# totalNetflix()
 
 def totalTimeSpent(movie):
     moviename = df[df['Title'].str.contains(movie, regex=False)]
@@ -37,17 +51,9 @@ def totalTimeSpent(movie):
 # totalTimeSpent('The Chase')
 # totalTimeSpent('Strangers From Hell')
 
-def totalNetflix():
-    totalDuration = df["Duration"]
-    print(totalDuration.shape)
-    totalDuration = totalDuration[(totalDuration > '0 days 00:01:00')]
-    print(totalDuration.shape)
-    print("total time spent on netflix:", totalDuration.sum())
-
-# totalNetflix()
-
 # when we watch netflix
-# which day spent the most watching netflix
+# which day we watch netflix most often
+# if uw which day u watch the most u need to use duration
 from matplotlib import pyplot as plt
 
 def whenWatch():
@@ -61,25 +67,30 @@ def whenWatch():
     # set categories -> days
     df['weekday'] = pd.Categorical(df['weekday'], categories=[0,1,2,3,4,5,6], ordered=True)
 
-    watchByDay = df['weekday'].value_counts()
+    watchByDay = df['weekday'].value_counts() #count how many mondays, tuesdays etc
+    # make monday first, ordered by date to fit in categories
+    # print(watchByDay)
     # make monday first, ordered by date to fit in categories
     watchByDay = watchByDay.sort_index() #now is according to what the rows is in the excel but we sort by mon tues wed now
     watchByDay.plot(kind='bar', figsize=(20,10),title='Netflix Shows Watched By Day')
     plt.show()
 
-# whenWatch()
+whenWatch()
+
+# CHALLENGE: try to use duration
 
 '''
 API
 '''
 def findGenre(title):
+    API_KEY = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' #use your own API key
     url = "https://imdb8.p.rapidapi.com/title/find"
 
     querystring = {"q":title}
 
     headers = {
         'x-rapidapi-host': "imdb8.p.rapidapi.com",
-        'x-rapidapi-key': "2614095f10msh111b259710e3f7dp1279d3jsn21efd84301bf"
+        'x-rapidapi-key': API_KEY
         }
 
     response = requests.request("GET", url, headers=headers, params=querystring)
@@ -97,7 +108,7 @@ def findGenre(title):
 
         headers = {
             'x-rapidapi-host': "imdb8.p.rapidapi.com",
-            'x-rapidapi-key': "2614095f10msh111b259710e3f7dp1279d3jsn21efd84301bf"
+            'x-rapidapi-key': API_KEY
             }
 
         response = requests.request("GET", url, headers=headers, params=querystring)
@@ -110,7 +121,7 @@ def findGenre(title):
         return 'no data found'
 
 # findGenre('Trailer') #this will return no data found cuz their API dun hv this record
-# findGenre('Strangers from hell')
+# print(findGenre('Strangers from hell'))
 
 def findGenres():
     movies = list(df['Title'])
@@ -145,7 +156,7 @@ def flatten(listoflists):
         if isinstance(i,list):
             # if i is an instance of the list (checking if its a value or another list)
             # if its another list den flatten
-            rt.extend(flatten(i))
+            rt.extend(flatten(i)) #goes back up and adds it to the final list aft the end of the call tree
         else: 
             # else append
             rt.append(i)
